@@ -1,0 +1,48 @@
+:root {
+    --main-bg-color: rgba(222, 197, 139, 0.6);
+    --link-color: rgba(180, 60, 40, 1);
+}
+
+.source-code-pro-ak20kf {
+    font-family: "Source Code Pro", monospace;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+body {
+    background: var(--main-bg-color);
+    font-family: "Source Code Pro", monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  transition: transform 0.3s ease-in-out; /* For the grow animation */
+}
+
+a:hover {
+  color: var(--link-color);
+  cursor: pointer;
+  text-decoration: none; /* Ensure no underline on hover */
+  transform: scale(1.03); /* Slightly grow on hover (adjust value as needed) */
+  opacity: 0.8; 
+}
+
+main {
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hero { 
+    max-width: 100%;
+}
+.nav {
+    display: flex;
+    justify-content: space-between;
+}
