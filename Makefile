@@ -3,4 +3,6 @@ clean:
 run: 
 	go run main.go
 
+all: clean run
+
 .phony: clean run
