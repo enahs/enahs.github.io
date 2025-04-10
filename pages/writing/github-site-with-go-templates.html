@@ -1,4 +1,17 @@
-{{define "github-site-with-go-templates"}}
-<p>this is a blog post written by me</p>
+{{define "content"}}
+<p>
+    After 12 or so years, I decided to start working on a personal site again.
+    I was inspired by the ghibli animation picture and took design inspiration from other minimal pages i'd seen on Hacker News.
+</p>
+<p>
+    Getting reacquainted with github pages, I quickly found myself wanting for a bit more power
+    than static HTML could provide. The default option is Jekyll, but this is far from my favorite. 
+    Ruby written by the former CEO of Github over a decade ago seems like a toolchain I don't want to install.
+    Hugo could also work, but it seemed like overkill. I just wanted a few templates. simple. 
+    Don't need a whole Next.js installation.
+</p>
+<p> So I set out to create my own static site generator in Go. The same templates that you'd use for a helm chart. To call Go templates lacking would be generous. 
+    While powerful, they lack the creature comforts of what one would expect with react.</p>
+
 {{ template "nav" .}}
 {{end}}

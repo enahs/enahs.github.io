@@ -50,7 +50,7 @@ func main() {
 		}
 		defer f.Close()
 
-		if err := t.ExecuteTemplate(f, "layout", nil); err != nil {
+		if err := t.ExecuteTemplate(f, "layout", map[string]string{"email": "shane@skada.io"}); err != nil {
 			panic(err)
 		}
 	}
