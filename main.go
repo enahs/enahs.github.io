@@ -49,8 +49,11 @@ func main() {
 			panic(err)
 		}
 		defer f.Close()
-
-		if err := t.ExecuteTemplate(f, "layout", map[string]string{"email": "shane@skada.io"}); err != nil {
+		data := map[string]string{"email": "shane@skada.io"}
+		if pg == "pages/index.html" {
+			data["name"] = "homepage"
+		}
+		if err := t.ExecuteTemplate(f, "layout", data); err != nil {
 			panic(err)
 		}
 	}
