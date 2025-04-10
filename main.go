@@ -14,7 +14,7 @@ func main() {
 		panic(err)
 	}
 	// copy static assets
-	if err := os.CopyFS("assets", os.DirFS("static/assets")); err != nil {
+	if err := os.CopyFS("static/assets", os.DirFS("assets")); err != nil {
 		panic(err)
 	}
 	layout := []string{
