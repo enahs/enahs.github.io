@@ -17,6 +17,11 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+# Default to bash
+defaults:
+  run:
+    shell: bash
+
 jobs:
     
     build:
@@ -31,10 +36,12 @@ jobs:
                 go-version: 1.24.2
             
             - name: install deps
-              run: go install github.com/enahs/enahs.github.io@latest
+              run: go mod tidy
             
             - name: build site
-              run: ./enahs.github.io
+              run: |
+                go build -o bin/ssg . 
+                ./bin/ssg
     
     deploy:
         environment:
