@@ -13,5 +13,15 @@
 <p> So I set out to create my own static site generator in Go. The same templates that you'd use for a helm chart. To call Go templates lacking would be generous. 
     While powerful, they lack the creature comforts of what one would expect with react.</p>
 
+<p>
+    My goals with this project were pretty simple:
+</p>
+<ol>
+    <li>leverage Github Actions to build my site bundle</li>
+    <li>Be able to embed environment variables</li>
+    <li>Keep it simple</li>
+</ol>
+
+<p>By using go, I knew it would be fast and compact.</p>
 {{ template "nav" .}}
 {{end}}
