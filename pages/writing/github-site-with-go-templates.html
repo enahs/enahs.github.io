@@ -1,4 +1,6 @@
 {{define "content"}}
+<h1>Creating a blog with github actions</h1>
+<em>Weds Apr 9 2025 11:51pm</em>
 <p>
     After 12 or so years, I decided to start working on a personal site again.
     I was inspired by the ghibli animation picture and took design inspiration from other minimal pages i'd seen on Hacker News.
@@ -21,7 +23,10 @@
     <li>Be able to embed environment variables</li>
     <li>Keep it simple</li>
 </ol>
-
+<p>for the first point, I've been goofing around in infra land long enough to know my way around a pipeline or two.</p>
+<p>embedding environment variables seemed like a big enough of a feature that this would require a bit of thought.</p>
 <p>By using go, I knew it would be fast and compact.</p>
+<p>As for further features, it'd be nice to have some HTML linting at build time.</p>
+<p>Overall, this was a pretty simple project and didn't take me long to do, but I think it's important to realize how much we sometimes over complicate simple things and end up using a clunky ass tool because it's "easier".</p>
 {{ template "nav" .}}
 {{end}}
