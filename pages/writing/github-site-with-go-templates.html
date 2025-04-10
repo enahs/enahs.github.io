@@ -14,7 +14,7 @@
 </p>
 <p> So I set out to create my own static site generator in Go. The same templates that you'd use for a helm chart. To call Go templates lacking would be generous. 
     While powerful, they lack the creature comforts of what one would expect with react.</p>
-
+<p>They say good artists copy, and great artists steal. That's kinda cliche, but I was able to grab some inspiration from other web frameworks. The pages thing that next.js had was kinda nifty. I like that. I'll use it. The assets folder that rails has, I can rock with that.</p>    
 <p>
     My goals with this project were pretty simple:
 </p>
@@ -23,10 +23,12 @@
     <li>Be able to embed environment variables</li>
     <li>Keep it simple</li>
 </ol>
+
+
 <p>for the first point, I've been goofing around in infra land long enough to know my way around a pipeline or two.</p>
 <p>embedding environment variables seemed like a big enough of a feature that this would require a bit of thought.</p>
 <p>By using go, I knew it would be fast and compact.</p>
 <p>As for further features, it'd be nice to have some HTML linting at build time.</p>
 <p>Overall, this was a pretty simple project and didn't take me long to do, but I think it's important to realize how much we sometimes over complicate simple things and end up using a clunky ass tool because it's "easier".</p>
-{{ template "nav" .}}
+
 {{end}}
