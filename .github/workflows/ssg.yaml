@@ -31,10 +31,10 @@ jobs:
                 go-version: 1.24.2
             
             - name: install deps
-              run: go get .
+              run: go install github.com/enahs/enahs.github.io@latest
             
             - name: build site
-              run: go run main.go
+              run: ./enahs.github.io
     
     deploy:
         environment:
