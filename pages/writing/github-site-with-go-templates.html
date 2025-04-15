@@ -1,6 +1,6 @@
 {{define "content"}}
 <article class="blog-post">
-  <h1>Creating a blog with github actions</h1>
+  <h1>Creating a Github page using Go Templates and Github Actions</h1>
   <em>Weds Apr 9 2025 11:51pm, updated mon Apr 14 5:10pm</em>
   <p>
     After 12 or so years, I decided to start working on a personal site again. I
@@ -45,14 +45,22 @@
     react. no context or state, just writing.
   </p>
   <p>
+    The project has zero dependencies outside of the go standard library. I use
+    makefiles because i'm a luddite, but not required by any means.
+  </p>
+  <p>
     I got pretty far with virtually no CSS. While it is probably not that
     accessible, as I write more, I can concoct the minimal amount of styles.
   </p>
   <p>
-    You want draft posts? It's called a branch; merge to the main and it gets
+    You want draft posts? It's called a branch; merge to the <code>main</code> and it gets
     released.
   </p>
   <h3>The Bad (slash things to solve later)</h3>
+  <p>
+    this serves as a list of known flaws (it's a quick and dirty product) slash
+    informal to-do list for myself.
+  </p>
   <p>
     Local dev workflow is kinda jank. There is no "hot reload" yet (although I
     could probably whip this up pretty quickly). It currently consists of
@@ -61,7 +69,7 @@
   <p>
     I don't think i've completely solved image rewriting / correct relative
     asset paths yet. I should probably test with a proper local static file
-    server.
+    server. 
   </p>
   <p>
     Overall, this was a pretty simple project and didn't take me long to do, but
@@ -69,10 +77,15 @@
     simple things and end up using a clunky ass tool because it's "easier".
   </p>
   <p>
+    It would be nice to embed some metadata in each page template with things
+    like title, article name, updated at etc to populate SEO things like meta
+    descriptions and to keep it DRY.
+  </p>
+  <p>
     You can view the source code here if you're so inclined:
     <a href="https://github.com/enahs/enahs.github.io">github</a>. It's open
-    source for now because ain't no way in hell i'm paying github no damn $4/mo for a
-    private repo.
+    source for now because ain't no way in hell i'm paying github no damn $4/mo
+    for a private repo.
   </p>
 </article>
 {{end}}
