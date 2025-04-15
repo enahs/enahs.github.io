@@ -32,7 +32,6 @@ func main() {
 	})
 
 	// parse templates
-
 	for _, pg := range pages {
 		t, err := template.ParseFiles(append(layout, pg)...)
 		if err != nil {

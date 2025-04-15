@@ -1,34 +1,78 @@
 {{define "content"}}
-<h1>Creating a blog with github actions</h1>
-<em>Weds Apr 9 2025 11:51pm</em>
-<p>
-    After 12 or so years, I decided to start working on a personal site again.
-    I was inspired by the ghibli animation picture and took design inspiration from other minimal pages i'd seen on Hacker News.
-</p>
-<p>
-    Getting reacquainted with github pages, I quickly found myself wanting for a bit more power
-    than static HTML could provide. The default option is Jekyll, but this is far from my favorite. 
-    Ruby written by the former CEO of Github over a decade ago seems like a toolchain I don't want to install.
-    Hugo could also work, but it seemed like overkill. I just wanted a few templates. simple. 
-    Don't need a whole Next.js installation.
-</p>
-<p> So I set out to create my own static site generator in Go. The same templates that you'd use for a helm chart. To call Go templates lacking would be generous. 
-    While powerful, they lack the creature comforts of what one would expect with react.</p>
-<p>They say good artists copy, and great artists steal. That's kinda cliche, but I was able to grab some inspiration from other web frameworks. The pages thing that next.js had was kinda nifty. I like that. I'll use it. The assets folder that rails has, I can rock with that.</p>    
-<p>
-    My goals with this project were pretty simple:
-</p>
-<ol>
-    <li>leverage Github Actions to build my site bundle</li>
-    <li>Be able to embed environment variables</li>
-    <li>Keep it simple</li>
-</ol>
-
-
-<p>for the first point, I've been goofing around in infra land long enough to know my way around a pipeline or two.</p>
-<p>embedding environment variables seemed like a big enough of a feature that this would require a bit of thought.</p>
-<p>By using go, I knew it would be fast and compact.</p>
-<p>As for further features, it'd be nice to have some HTML linting at build time.</p>
-<p>Overall, this was a pretty simple project and didn't take me long to do, but I think it's important to realize how much we sometimes over complicate simple things and end up using a clunky ass tool because it's "easier".</p>
-
+<article class="blog-post">
+  <h1>Creating a blog with github actions</h1>
+  <em>Weds Apr 9 2025 11:51pm, updated mon Apr 14 5:10pm</em>
+  <p>
+    After 12 or so years, I decided to start working on a personal site again. I
+    was inspired by the the AI ghibli animation pictures that are suddenly so
+    trendy. I took design inspiration from other low key personal pages i've
+    seen on Hacker News.
+  </p>
+  <p>
+    Getting reacquainted with github pages, I quickly found myself wanting for a
+    bit more power than static HTML could provide. The default option provided
+    is Jekyll. While i'm sure it works fine, a ball of Ruby written by the
+    former CEO of Github over a decade ago seems like a toolchain I don't want
+    to come to grips with. Hugo could also work, but it seemed like overkill. I
+    just wanted dead simple templates and a couple of them. Making a Next.js
+    site also seemed like a drag. An empty next.js project is 30mb. Seems
+    bloated for what I'm trying to accomplish.
+  </p>
+  <p>
+    After a bit of research, I got the idea to write my own static site
+    generator in Go. Go templates are pretty simple and relatively primative but
+    could get the job done for a static page like a blog. While powerful, they
+    lack the creature comforts of what one would expect with tooling like React.
+  </p>
+  <p>
+    They say good artists copy, and great artists steal. I wonder if it applies
+    to coders. While kinda cliche, I was able to borrow inspiration from some
+    other prevalent web technologies. I like the next.js pages routing. It
+    harkens back to the good old days of web. Simple and easy to grok. The
+    assets folder that rails has is also simple enough to understand. I can rock
+    with that.
+  </p>
+  <p>
+    At first I just wanted a blog, but eventually I wanted it to work in a
+    gitOps sort of way. I leveraged github actions to SSG the static pages at
+    build time, then load the bundle up. Lucky for me, most of these actions
+    already exist, so I just had to write a touch of code to generate the static
+    pages.
+  </p>
+  <h3>The Good</h3>
+  <p>
+    This has some nice side effects. Pages just work. it's great. No JS. No
+    react. no context or state, just writing.
+  </p>
+  <p>
+    I got pretty far with virtually no CSS. While it is probably not that
+    accessible, as I write more, I can concoct the minimal amount of styles.
+  </p>
+  <p>
+    You want draft posts? It's called a branch; merge to the main and it gets
+    released.
+  </p>
+  <h3>The Bad (slash things to solve later)</h3>
+  <p>
+    Local dev workflow is kinda jank. There is no "hot reload" yet (although I
+    could probably whip this up pretty quickly). It currently consists of
+    opening the page in the browser.
+  </p>
+  <p>
+    I don't think i've completely solved image rewriting / correct relative
+    asset paths yet. I should probably test with a proper local static file
+    server.
+  </p>
+  <p>
+    Overall, this was a pretty simple project and didn't take me long to do, but
+    I think it's important to realize how much we sometimes over complicate
+    simple things and end up using a clunky ass tool because it's "easier".
+  </p>
+  <p>
+    You can view the source code here if you're so inclined:
+    <a href="https://github.com/enahs/enahs.github.io">github</a>. It's open
+    source for now because ain't no way in hell i'm paying github no damn $4/mo for a
+    private repo.
+  </p>
+</article>
 {{end}}
