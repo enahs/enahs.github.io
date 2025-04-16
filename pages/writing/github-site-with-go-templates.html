@@ -1,4 +1,5 @@
-{{define "title"}}ENAHS | Creating a Github page using Go Templates and Github Actions {{end}}
+{{define "title"}}ENAHS | Creating a Github page using Go Templates and Github
+Actions {{end}} 
 {{define "content"}}
 <article class="blog-post">
   <h1>Creating a Github page using Go Templates and Github Actions</h1>
@@ -54,8 +55,8 @@
     accessible, as I write more, I can concoct the minimal amount of styles.
   </p>
   <p>
-    You want draft posts? It's called a branch; merge to the <code>main</code> and it gets
-    released.
+    You want draft posts? It's called a branch; merge to the
+    <code>main</code> and it gets released.
   </p>
   <h3>The Bad (slash things to solve later)</h3>
   <p>
@@ -65,12 +66,20 @@
   <p>
     Local dev workflow is kinda jank. There is no "hot reload" yet (although I
     could probably whip this up pretty quickly). It currently consists of
-    opening the page in the browser.
+    opening the page in the browser. Would be nice to re-run the static folder
+    build step on changes in the pages directory.
   </p>
   <p>
-    I don't think i've completely solved image rewriting / correct relative
-    asset paths yet. I should probably test with a proper local static file
-    server. 
+    <s
+      >I don't think i've completely solved image rewriting / correct relative
+      asset paths yet. I should probably test with a proper local static file
+      server.
+    </s>
+    update: I have added a local file server.
+    <a
+      href="https://github.com/enahs/enahs.github.io/commit/26aebf1612c1a4da3a34d2db6a4e38a29d8e3885"
+      >[link]</a
+    >
   </p>
   <p>
     It would be nice to embed some metadata in each page template with things
