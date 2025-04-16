@@ -53,6 +53,7 @@ func build() error {
 	// gather configuration from env
 	email := os.Getenv("EMAIL")
 	GAKey := os.Getenv("GA_KEY")
+
 	// create a static directory
 	if err := os.MkdirAll("./static", 0775); err != nil {
 		return err
@@ -62,7 +63,7 @@ func build() error {
 		return err
 	}
 	layout := []string{
-		"layout/layout.tmpl",
+		"templates/layout.tmpl",
 		"templates/nav.tmpl",
 		"templates/head.tmpl",
 	}
