@@ -50,6 +50,9 @@ func (d HTMLDir) Open(name string) (http.File, error) {
 }
 
 func build() error {
+	// gather configuration from env
+	email := os.Getenv("EMAIL")
+	GAKey := os.Getenv("GA_KEY")
 	// create a static directory
 	if err := os.MkdirAll("./static", 0775); err != nil {
 		return err
@@ -91,7 +94,10 @@ func build() error {
 			return err
 		}
 		defer f.Close()
-		data := map[string]string{"email": "shane@skada.io"}
+		data := map[string]string{
+			"email": email,
+			"GAKey": GAKey,
+		}
 		if pg == "pages/index.html" {
 			data["name"] = "homepage"
 		}
