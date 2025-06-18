@@ -33,7 +33,7 @@ a:hover {
 }
 
 main {
-    max-width: 460px;
+    max-width: 680px;
     display: flex;
     flex-direction: column;
     gap: 1em;
@@ -46,7 +46,11 @@ main {
     display: flex;
     justify-content: space-between;
 }
-
+#article-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
 @media only screen and (max-width: 600px) {
     main {
         max-width: 320px;
