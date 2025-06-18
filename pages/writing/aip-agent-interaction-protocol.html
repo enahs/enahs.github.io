@@ -1,0 +1,456 @@
+{{define "title"}}AIP: Agent Interaction Protocol Specification {{end}} {{define
+"content"}}
+<h1>AIP: Agent Interaction Protocol Proposal</h1>
+<h2>Table of Contents</h2>
+<ol>
+  <li><a href="#tldr">TL;DR</a></li>
+  <li><a href="#abstract">Abstract</a></li>
+  <li><a href="#intro">Introduction</a></li>
+  <li><a href="#motivation">The Motivation: Ending the Bot Arms Race</a></li>
+  <li><a href="#">A Tale of Two Philosophies: Pragmatism vs. Primitives</a></li>
+  <li>
+    <a href="#spec"
+      >The Agent Interaction Protocol (AIP) Technical Specification</a
+    >
+    <ul>
+      <li>4.1. <a href="#">Core Principles</a></li>
+      <li>
+        4.2. <a href="#">Authentication: A Multi-Tiered Approach to Trust</a>
+      </li>
+      <li>
+        4.3. <a href="#">Action Invocation &amp; Discovery (Single Service)</a>
+      </li>
+      <li>4.4. <a href="#">Real-Time Extension: AIP-RT</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="#"
+      >Federated Discovery: A Global Registry for Agent Capabilities</a
+    >
+    <ul>
+      <li>5.1. <a href="#">The Capability Registry</a></li>
+      <li>5.2. <a href="#">Discovery Workflow Across Servers</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="#">Implementation in Practice</a>
+    <ul>
+      <li>
+        6.1. <a href="#">The Client: From User Intent to Agentic Action</a>
+      </li>
+      <li>6.2. <a href="#">The Service Provider: Exposing AIP Endpoints</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="#">A Decentralized Ecosystem: The Federated AIP Gateway</a>
+    <ul>
+      <li>7.1. <a href="#">Core Concepts from the Fediverse</a></li>
+      <li>7.2. <a href="#">The Decentralized Workflow in Practice</a></li>
+      <li>7.3. <a href="#">The Emergent Marketplace</a></li>
+    </ul>
+  </li>
+  <li>
+    <a href="#conclusion">Conclusion</a>
+  </li>
+</ol>
+
+<div id="tldr" class="tldr-box">
+  <h3>TL;DR</h3>
+  <ul>
+    <li>
+      <strong>The Problem</strong> The internet is stuck in a perpetual arms
+      race between bots/scrapers and security providers like Cloudflare.
+      Legitimate AI agents have no standardized way to talk to websites.
+    </li>
+    <li>
+      <strong>The Solution (AIP):</strong> A protocol that gives agents a real
+      identity (using JWT/mTLS) and a dedicated "front door" to interact with
+      services. It leverages off the shelf technology (OpenAPI, JSON-RPC) so
+      it's easy for websites and agent-writers to adopt.
+    </li>
+    <li>
+      <strong>Discovery:</strong> Instead of a single, central "App Store," AIP
+      uses a decentralized network inspired by the Fediverse (ActivityPub &
+      WebFinger). This allows agents to discover services that can help with a
+      task (e.g., "buy shoes") across the entire web in a resilient way.
+    </li>
+    <li>
+      <strong>User Control:</strong> Users remain in control. They choose a
+      personal "Gateway" provider to manage their credentials and permissions
+      for all their agents, providing a single point of trust and management.
+    </li>
+  </ul>
+</div>
+<h2 id="abstract">Abstract</h2>
+<p>
+  The rise of Large Language Models (LLMs) has unlocked the potential for AI
+  Agents to perform complex tasks on behalf of users. This represents a step
+  function improvement in our ability to automate tasks emulating human
+  behavior. However, the absence of a standardized communication protocol forces
+  these agents to rely on what ultimately amounts to brittle web scraping. We
+  introduce the Agent Interaction Protocol (AIP), a specification designed to
+  facilitate reliable, secure communication between AI Agents and web services.
+</p>
+<p>
+  AIP directly addresses the costly and escalating arms race between anonymous
+  bots and website security systems. Today, agentic solutions often mimic human
+  traffic, leveraging CAPTCHA farms and residential proxies, leading to a
+  zero-sum game that benefits only the Scraping-as-a-Service providers and
+  Cloudflare. AIP proposes an alternative: a well-defined, identity-first access
+  point where bots can be treated as legitimate, verifiable actors in a
+  zero-trust environment, optionally leveraging mutual TLS (mTLS) for
+  cryptographic proof of identity.
+</p>
+<p>
+  AIP prioritizes ease of adoption by using common web standards already widely
+  used today such as JWT for identity, OpenAPI for capability definition, and
+  JSON-RPC over HTTP/WebSocket for communication. This task-oriented approach
+  lets users express high-level goals (e.g., "help me buy size 11 New Balance
+  999's from the cheapest place with the fastest shipping") that agents can
+  execute across a federated network of services. While other proposals provide
+  low-level primitive for specifying how LLM clients might interact with
+  resources, AIP provides the user-centric application layer necessary to
+  accomplish meaningful tasks. This paper outlines the proposed AIP
+  specification, introduces a federated discovery mechanism, and presents in a
+  somewhat handwavy fashion the "AIP Gateway & Marketplace" concept as a secure
+  bridge for fostering a robust and trustworthy agent ecosystem. The goal of
+  this paper is to merely suggest an alternative model to the current MCP
+  implmentation rather than present a fully-baked rigorous solution to all of
+  the internet's bot problems.
+</p>
+
+<h2 id="intro">1. Introduction</h2>
+<p>
+  We are witnessing a watershed moment in human-computer interaction. We've gone
+  from command-line interfaces to graphical user interfaces, and then to mobile
+  and voice, now leading up to the
+  <strong>agentic interface</strong>. In this new paradigm, users delegate
+  complex goals to autonomous or semi-autonomous AI Agents, which are expected
+  to navigate the digital world to fulfill them.
+</p>
+<p>
+  An agent given a task such as:
+  <em>"help me book my trip to Portugal with the boys this summer"</em> must
+  interact with a multitude of services: calendars, airlines, hotels, etc.
+  Today, this requires a fragile and inefficient combination of web scraping,
+  reverse-engineering private APIs, or bespoke, hard-coded integrations. This
+  approach is not scalable, secure, or reliable.
+</p>
+<p>
+  The Agent Interaction Protocol (AIP) is proposed as the solution. It is a
+  pragmatic and secure specification that provides a "lingua franca" for agents
+  and services, enabling a new generation of powerful, interoperable agentic
+  applications on the open web. AIP aims to allow existing service providers to
+  specify a bot-first interface that can be used to perform legitimate tasks on
+  behalf of end users, giving them control over rate limiting, scope and access.
+</p>
+
+<h2 id="motivation">2. The Motivation: Ending the Bot Arms Race</h2>
+<p>
+  The modern internet is engaged in an expensive, and ultimately futile war. On
+  one side are websites and service providers, deploying sophisticated defenses
+  like Web Application Firewalls (WAFs) and CAPTCHA challenges to protect their
+  resources. On the other side are the current generation of bots and agentic
+  solutions—anonymous, often malicious actors that try to mimic human traffic to
+  achieve their goals, which range from content scraping and competitive data
+  mining to ticket scalping and account takeover.
+</p>
+<p>
+  This conflict has spawned a parasitic ecosystem of CAPTCHA-solving farms and
+  residential proxy networks, tools designed explicitly to circumvent security
+  measures. The result is an escalating arms race where the only clear winners
+  are the intermediaries selling the tools for attack and defense. Legitimate
+  users suffer from increased friction, while service providers bear the immense
+  cost of serving massive volumes of unwanted traffic and investing in
+  ever-more-complex detection and deterrant systems.
+</p>
+<p><strong>AIP offers an exit from this cycle.</strong></p>
+<p>
+  Instead of forcing all automated traffic through the same "front door" as
+  human users, AIP provides a separate, well-defined access point designed
+  specifically for bots. It changes the core premise from "is this a legitimate
+  user?" to "is this agent known, is it authorized, and do I trust it?" By
+  adopting AIP, a service provider can:
+</p>
+<ol>
+  <li>
+    <strong>Differentiate Traffic:</strong> Immediately separate legitimate,
+    identified agent traffic from anonymous, potentially malicious bot traffic.
+  </li>
+  <li>
+    <strong>Establish a Zero-Trust Environment:</strong> Stop trusting traffic
+    based on its characteristics (IP address, user-agent string, random tea
+    leaves derived from the browser settings) and start verifying identity
+    cryptographically. By leveraging standards like JWT and, for higher
+    security, <strong>mutual TLS (mTLS)</strong>, an agent can present a
+    verifiable certificate proving its identity. This moves beyond heuristics to
+    cryptographic certainty.
+  </li>
+  <li>
+    <strong>Reduce Costs and Friction:</strong> Lower the load on expensive
+    bot-detection systems and remove annoying CAPTCHA challenges for human
+    users, while providing agents with efficient, structured access to
+    predefined resources.
+  </li>
+</ol>
+<p>
+  AIP enables a world where automation is not a threat to be blocked, but a
+  first-class citizen with verifiable credentials and explicit permissions.
+</p>
+
+<h2 id="spec">4. The Agent Interaction Protocol Technical Specification</h2>
+<p>
+  AIP is built on three core pillars: Ease of Adoption, Verifiable Identity +
+  Default Secure, and Explicit Intent. A core design principle is providing a
+  flexible, multi-tiered trust model, allowing services to choose an appropriate
+  level of security for their specific needs.
+</p>
+
+<h3>4.1. Core Principles</h3>
+<ul>
+  <li>
+    <strong>Ease of Adoption:</strong> Utilize off-the-shelf technologies
+    (REST/JSON-RPC, JWT, OpenAPI, WebSocket) to minimize the barrier to entry
+    for service providers.
+  </li>
+  <li>
+    <strong>Verifiable Identity + Default Secure:</strong> Services must be able
+    to securely verify an agent's identity, its creator, and the end-user it
+    represents. mTLS can be used for strong, cryptographic client verification.
+  </li>
+  <li>
+    <strong>Explicit Intent:</strong> Interactions are based on machine-readable
+    definitions of available actions via the OpenAPI standard.
+  </li>
+</ul>
+
+<h3>4.2. Authentication: A Multi-Tiered Approach to Trust</h3>
+<p>
+  AIP mandates a baseline authentication method (JWT) and provides an optional,
+  higher-assurance method (mTLS) for sensitive applications. This allows the
+  protocol to be both widely applicable and suitable for environments where
+  security is paramount.
+</p>
+
+<h4>Tier 1 (Default): JWT for Flexible, Application-Level Authorization</h4>
+<p>
+  The default authentication mechanism for AIP is the
+  <strong>JSON Web Token (JWT)</strong>, passed as a Bearer Token in the
+  <code>Authorization</code> header. This approach was chosen as the default for
+  its immense flexibility and ease of adoption.
+</p>
+<p>
+  A JWT is a self-contained, digitally signed token that carries rich,
+  application-level context. It primarily answers the question:
+  <strong
+    >"What is this agent allowed to do on behalf of this user, and for how
+    long?"</strong
+  >
+</p>
+<p><strong>Key JWT Claims:</strong></p>
+<ul>
+  <li>
+    <code>iss</code> (Issuer): The HTTPS URL of the Agent Platform or Gateway
+    issuing the token.
+  </li>
+  <li><code>sub</code> (Subject): The unique ID of the AI Agent.</li>
+  <li><code>aud</code> (Audience): The base URL of the Service Provider.</li>
+  <li>
+    <code>aip:uid</code>: A stable, pseudonymous identifier for the end-user.
+  </li>
+  <li>
+    <code>aip:scopes</code>: Space-separated permissions (e.g.,
+    <code>products:read cart:write</code>).
+  </li>
+</ul>
+<p><strong>Sample JWT Use Cases</strong></p>
+<ul>
+  <li>
+    <strong>E-commerce Agent:</strong> An agent finding the best price for a
+    product. The risk is low; a compromised token might lead to a manipulated
+    shopping cart, but not a financial loss if a final confirmation step is in
+    place. The ability to carry scopes like <code>cart:write</code> is ideal.
+  </li>
+  <li>
+    <strong>News Aggregator Agent:</strong> An agent collecting articles based
+    on a user's interests. This is a read-only operation where the JWT simply
+    needs to prove the user has a valid subscription.
+  </li>
+  <li>
+    <strong>Travel Search Agent:</strong> An agent searching for flights and
+    hotels. The search operations are public, and the JWT is only needed to
+    access user preferences or frequent flyer account details.
+  </li>
+</ul>
+
+<h4>Tier 2 (Optional): mTLS for High-Assurance, Transport-Level Identity</h4>
+<p>
+  For services handling highly sensitive data or performing irreversible
+  actions, AIP supports <strong>mutual TLS (mTLS)</strong> as an additional
+  layer of security. In this model, not only does the agent verify the server's
+  certificate (standard TLS), but the server also cryptographically verifies the
+  agent's client certificate during the initial connection handshake.
+</p>
+<p>
+  mTLS is not the default because it introduces significant complexity in
+  managing a Public Key Infrastructure (PKI) for issuing, rotating, and revoking
+  client certificates. However, for certain use cases, this complexity is
+  justified. mTLS answers a different, more fundamental question:
+  <strong
+    >"Can I cryptographically prove the identity of the organization or machine
+    making this connection <em>before</em> they send any data?"</strong
+  >
+</p>
+<p><strong>Sample mTLS Use Cases:</strong></p>
+<p>
+  The quintessential use case for mTLS in AIP is
+  <strong>financial services, particularly in an Open Banking context.</strong>
+</p>
+<p>
+  Imagine an agent tasked with "paying my credit card bill from my checking
+  account." This involves two different banks and a real transfer of funds.
+</p>
+<ol>
+  <li>
+    <strong>The Risk:</strong> A fraudulent request could lead to significant,
+    irreversible financial loss. The bank's primary concern is not just "does
+    this request say it's for Alice" but "is this request coming from a
+    legitimate, regulated, and audited financial application that Alice
+    authorized?"
+  </li>
+  <li>
+    <strong>The mTLS Solution:</strong> The "Agent" in this case is a registered
+    Financial Institution or FinTech company. As part of its regulatory
+    onboarding, it is issued a client certificate from a trusted authority. When
+    its agent connects to the bank's AIP endpoint, the mTLS handshake occurs.
+    The bank's server inspects the agent's client certificate and verifies that
+    it was issued to the legitimate, registered FinTech company.
+  </li>
+  <li>
+    <strong>The Result:</strong> The bank now has cryptographic, non-repudiable
+    proof of the <em>organization's identity</em> behind the agent. The JWT sent
+    <em>after</em> the mTLS connection is established can then provide the
+    application-level context ("this action is for user
+    <code>jane-doe-123</code> to pay bill <code>cc-456</code>"). This two-factor
+    system (mTLS for organizational identity, JWT for user authorization)
+    provides the robust security required for such a high-stakes transaction.
+  </li>
+</ol>
+<p><strong>Other mTLS Use Cases:</strong></p>
+<ul>
+  <li>
+    <strong>Healthcare:</strong> An agent retrieving a patient's medical history
+    (PHI) from a hospital network.
+  </li>
+  <li>
+    <strong>Critical Infrastructure:</strong> An agent authorized to adjust
+    settings on an industrial IoT platform or energy grid.
+  </li>
+</ul>
+
+<h3>4.3. Action Invocation &amp; Discovery (Single Service)</h3>
+<ul>
+  <li>
+    <strong>Discovery:</strong> An agent discovers a service's AIP capabilities
+    by fetching <code>https://&lt;hostname&gt;/.well-known/aip.json</code>.
+  </li>
+  <li>
+    <strong><code>aip.json</code> Contents:</strong> Contains the
+    <code>rpc_endpoint</code>, <code>jwks_url</code>, and the
+    <code>openapi_spec_url</code>.
+  </li>
+  <li>
+    <strong>Execution:</strong> The agent makes <code>POST</code> requests to
+    the <code>rpc_endpoint</code> with a standard JSON-RPC 2.0 body.
+  </li>
+</ul>
+
+<h3>4.4. Real-Time Extension: AIP-RT</h3>
+<p>
+  AIP supports an optional extension over WebSockets for real-time updates.
+  Authentication is handled via the JWT during the initial HTTP
+  <code>Upgrade</code> request.
+</p>
+
+<h2>5. Federated Discovery: A Global Registry for Agent Capabilities</h2>
+<p>
+  AIP solves cross-web discovery through a
+  <strong>Federated Capability Registry</strong>, typically hosted by an AIP
+  Gateway & Marketplace.
+</p>
+
+<h3>5.1. The Capability Registry</h3>
+<p>
+  Service Providers register their domain and a list of standardized
+  <strong>capability identifiers</strong> (e.g.,
+  <code>ecommerce.product_search</code>, <code>travel.flight_search</code>).
+</p>
+
+<h3>5.2. Discovery Workflow Across Servers</h3>
+<p>
+  An agent decomposes a user's intent into a required capability, queries the
+  registry to find all services offering it, and then queries each service's
+  local <code>aip.json</code> to learn its specific API contract. This enables
+  dynamic, multi-service task execution.
+</p>
+
+<h2>6. Implementation in Practice</h2>
+<h3>6.1. The Client: From User Intent to Agentic Action</h3>
+<p>
+  <strong>User Prompt:</strong>
+  <em
+    >"Buy me size 11 New Balance 999's from the cheapest place with the fastest
+    shipping."</em
+  >
+</p>
+<p>
+  The agent uses the Federated Discovery workflow to query multiple e-commerce
+  vendors, aggregate results, and present the user with the optimal choice for
+  purchase confirmation.
+</p>
+
+<h3>6.2. The Service Provider: Exposing AIP Endpoints</h3>
+<p>
+  A service provider defines their agent-facing methods in an OpenAPI spec,
+  exposes it via aip.json, and configures their API gateway to validate AIP JWTs
+  (and optionally, mTLS client certificates) on a dedicated endpoint.
+</p>
+
+<h2>7. The Ecosystem Enabler: The AIP Gateway & Marketplace</h2>
+<p>
+  For AIP to achieve mainstream adoption, users need a secure and simple way to
+  manage agents. The <strong>AIP Gateway & Marketplace</strong> serves this
+  need.
+</p>
+<ul>
+  <li>
+    <strong>Marketplace:</strong> A "store" where users can discover and enable
+    agents from trusted publishers.
+  </li>
+  <li>
+    <strong>Gateway (Credential Locker):</strong> A secure hub where users
+    connect their accounts. The Gateway stores user credentials and brokers
+    access, issuing the AIP JWTs and acting as the central circle of trust.
+  </li>
+</ul>
+<p>
+  This architecture solves the critical credential management problem and
+  provides users with a single dashboard to monitor and revoke agent
+  permissions, fostering a safe and transparent ecosystem.
+</p>
+
+<h2 id="conclusion">8. Conclusion</h2>
+<p>
+  The future of the web is agentic. To realize this future, we must move beyond
+  the current arms race of anonymity and obfuscation. We need a high-level,
+  task-oriented protocol that is secure, discoverable, and easy for the existing
+  web to adopt.
+</p>
+<p>
+  The Agent Interaction Protocol (AIP) provides this pragmatic path forward. By
+  building on established standards and focusing on the core challenges of
+  verifiable identity, federated discovery, and secure execution, AIP offers a
+  clear roadmap for creating a rich, interoperable ecosystem of AI agents that
+  can finally begin to accomplish meaningful work on behalf of all users.
+</p>
+{{end}}
