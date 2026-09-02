@@ -1,59 +1,25 @@
-package main
+package build
 
 import (
-	"flag"
 	"fmt"
-	"html/template"
-	"log"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"text/template"
 )
 
-func main() {
-	if err := build(); err != nil {
-		panic(err)
-	}
-
-	// local server
-	shouldServe := flag.Bool("serve", false, "--serve=true")
-	flag.Parse()
-	if *shouldServe {
-		fs := http.FileServer(HTMLDir{http.Dir("./static")})
-		http.Handle("/", fs)
-
-		log.Print("Listening on :3000...")
-		err := http.ListenAndServe(":3000", nil)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-}
-
-// reference pages locally without referring to .html in link
-// https://stackoverflow.com/questions/57281010/remove-the-html-extension-from-every-file-in-a-simple-http-server
-type HTMLDir struct {
-	d http.Dir
-}
-
-func (d HTMLDir) Open(name string) (http.File, error) {
-	f, err := d.d.Open(name + ".html")
-	if os.IsNotExist(err) {
-		// Not found, try again with name as supplied.
-		if f, err := d.d.Open(name); err == nil {
-			return f, nil
-		}
-	}
-	return f, err
-}
-
-func build() error {
+func Build() error {
 	// gather configuration from env
-	email := os.Getenv("EMAIL")
-	GAKey := os.Getenv("GA_KEY")
-
+	var (
+		email    = os.Getenv("EMAIL")
+		GAKey    = os.Getenv("GA_KEY")
+		buildEnv = os.Getenv("BUILD_ENV")
+	)
+	// blow away existing static dir if any
+	if err := os.RemoveAll("./static"); err != nil {
+		return err
+	}
 	// create a static directory
 	if err := os.MkdirAll("./static", 0775); err != nil {
 		return err
@@ -96,8 +62,9 @@ func build() error {
 		}
 		defer f.Close()
 		data := map[string]string{
-			"email": email,
-			"GAKey": GAKey,
+			"email":    email,
+			"GAKey":    GAKey,
+			"buildEnv": buildEnv,
 		}
 		if pg == "pages/index.html" {
 			data["name"] = "homepage"
