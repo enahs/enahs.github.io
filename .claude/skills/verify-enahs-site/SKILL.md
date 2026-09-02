@@ -61,18 +61,25 @@ Exit code is the number of failed checks.
 ## Drive
 
 Read `features/README.md`, then the file for the feature you are proving. Use the exact commands
-there. Three ways to drive the app:
+there. Four ways to drive the app:
 
 ```bash
 control-site get /about                       # HTTP request, prints status line and body
 control-site browser inspect --url http://localhost:3000/about --screenshot about.png
 control-site browser watch-reload --url http://localhost:3000/about \
     --create-page pages/verify-probe-<id>.html --marker <Marker>
+control-site browser vitals --url http://localhost:3000/ --runs 3 --throttle slow4g
 ```
 
 `browser inspect` returns JSON with the document title, first heading, visible text, every link
 href, image load state, script sources, and the computed body font and alignment. Assert against
 those fields, not against a template file.
+
+`browser vitals` loads the page repeatedly under an emulated mobile network and returns median
+Largest Contentful Paint, Cumulative Layout Shift, and per-resource transfer bytes. It exits
+non-zero when either metric leaves the Core Web Vitals `good` band. Never run it without a
+throttle profile; on unthrottled localhost the numbers are meaningless. See
+`features/web-vitals.md`.
 
 It also returns `mainDocTop` and `contentReachable`, which say whether the page's content begins
 at or below the scroll origin. A false `contentReachable` means part of the page cannot be
