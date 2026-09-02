@@ -7,7 +7,7 @@ Google Analytics snippet. The contact address in the navigation comes from the e
 ## Sub-features
 
 - `config-dev-script` includes the reload script when `BUILD_ENV` is unset.
-- `config-prod-script` excludes the reload script when `BUILD_ENV` is `PROD`.
+- `config-prod-script` excludes the reload script when `BUILD_ENV` holds any non-empty value.
 - `config-analytics-on` emits the analytics snippet when `GA_KEY` is set.
 - `config-analytics-off` emits no analytics markup when `GA_KEY` is empty.
 - `config-email` renders `EMAIL` into the navigation contact link.
@@ -64,6 +64,7 @@ Preconditions:
   content before reading a zero count as a pass.
 - **Every page carries the head template,** so these checks hold on any route. `index.html` is
   chosen only because it is the shortest.
-- **The published site is built by the GitHub Actions workflow,** which sets `BUILD_ENV`, `EMAIL`
-  and `GA_KEY` from repository variables. A local production build proves the template logic, not
-  the deployed values.
+- **The published site is built by the GitHub Actions workflow.** It reads `EMAIL` and `GA_KEY`
+  from repository variables, but `BUILD_ENV` is a hardcoded literal in the workflow file, so no
+  repository variable can switch production into development mode. A local production build proves
+  the template logic, not the deployed values.

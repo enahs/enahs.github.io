@@ -6,7 +6,7 @@ pushes a reload over a WebSocket that a script in every dev page listens on.
 
 ## Sub-features
 
-- `reload-connect` opens the WebSocket from every dev page and logs the greeting.
+- `reload-connect` opens the WebSocket from every dev page and logs that it connected.
 - `reload-rebuild` rebuilds the whole site when a watched source file changes.
 - `reload-refresh` refreshes the open tab after a successful rebuild.
 - `reload-newpage` makes a newly created page reachable without restarting the server.
@@ -44,7 +44,16 @@ Preconditions:
 - **Reconnect after a drop.** Read `pageErrors` from the `watch-reload` result. It currently
   contains `TypeError: Assignment to constant variable.` thrown from `ws.onclose` in
   `assets/js/ws.js`. Record this sub-feature as failing. The reload still worked because the page
-  navigation opened a fresh socket, not because the retry ran.
+  navigation opened a fresh socket, not because the retry ran. Expect this error on every single
+  reload, not only after a dropped connection, because the server closes the socket itself once it
+  has sent the signal, so the close handler runs every time.
+- **Ghost regression check.** The steps above all start from a restart, so on their own they can
+  never catch a regression in the stale-goroutine defect. Prove that defect is no worse than
+  documented. Run `control-site ws --for 4 --expect quiet` to open and close a socket, which seeds
+  exactly one ghost, then run a second `watch-reload` on a new probe page **without restarting**.
+  Today that reports `reloaded` false with a single load event, which is the known defect. A
+  result worse than one lost reload, such as the server wedging or every later drive failing, is a
+  regression.
 - **Proof.** Keep `hot-reload-before.png` and `hot-reload-after.png`, the load event timings, the
   fetched body of the new route, and the server log excerpt. The two screenshots are expected to
   look identical, because the refreshed tab stays on `/about` while the change landed on a new
@@ -55,9 +64,12 @@ Preconditions:
 
 - **A closed WebSocket leaves a goroutine that consumes one future reload.** Each connection
   spawns a receiver that never learns the socket died. After a browser exits, that ghost is still
-  first in line for the next reload signal, writes to a dead socket, logs `broken pipe`, and the
-  live tab never refreshes. One ghost is enough to make a healthy feature look broken. Restart
-  before every reload drive.
+  waiting on the reload channel, and it may win the next signal, write to a dead socket, and leave
+  the live tab unrefreshed. Which waiter wins is not defined, since Go gives no ordering guarantee
+  among blocked receivers, so the failure is intermittent rather than certain. Each ghost consumes
+  exactly one signal and then exits, so the damage is one lost reload per abandoned connection,
+  not a permanent block. One ghost is enough to make a healthy feature look broken. Restart before
+  every reload drive.
 - **`doctor` creates a ghost of its own.** Its liveness probe opens and closes a WebSocket. Running
   `doctor` and then a reload drive without a restart in between will fail, and the failure is the
   probe's fault, not the app's.

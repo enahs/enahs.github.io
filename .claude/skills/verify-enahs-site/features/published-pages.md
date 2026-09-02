@@ -1,14 +1,14 @@
 # Published pages
 
 Every file under `pages/` becomes a page on the site with its own title, the shared navigation,
-the Source Code Pro typeface, and any images it references. A reader lands on one of four routes
+the Source Code Pro typeface, and any images it references. A reader lands on one of five routes
 and sees finished content, not a template.
 
 ## Sub-features
 
 - `pages-home` renders the hero image at `/`.
 - `pages-about` renders the About heading and biography.
-- `pages-projects` renders the Projects heading and both outbound project links.
+- `pages-projects` renders the Projects heading and all three outbound project links.
 - `pages-writing` renders the article index and the article itself.
 - `pages-nav` shows `About` in the navigation on the homepage and `Home` everywhere else.
 - `pages-typography` applies Source Code Pro to body text on every route.
@@ -42,8 +42,9 @@ Preconditions:
   `/projects`, `/writing` and a `mailto:` entry, and does not contain `/about`.
 - **Projects page.** Choose `Projects`. Run
   `control-site browser inspect --url http://localhost:3000/projects --screenshot projects.png`.
-  The heading is `Projects` and `links` contains `https://www.interviewquery.com` and
-  `https://www.skada.io`.
+  The heading is `Projects` and `links` contains `https://www.playcrossle.com`,
+  `https://www.interviewquery.com` and `https://www.skada.io`, in that order. Crossle is
+  listed first.
 - **Writing index.** Choose `Writing`. Run
   `control-site browser inspect --url http://localhost:3000/writing/ --screenshot writing.png`.
   The heading is `Writing` and `links` contains
@@ -58,10 +59,12 @@ Preconditions:
   `contentReachable` is true and `mainDocTop` is `8`, the body margin. Repeat on every route.
   A negative `mainDocTop` means content sits above scroll position zero and no amount of
   scrolling will reveal it.
-- **Centering still applies where it fits.** Read `mainDocTop` on `/about` and `/projects`. Both
-  are well above `8`, which shows short pages remain vertically centered. A value of exactly `8`
-  on a short page means centering was lost, not that anything is broken.
-- **Proof.** Keep the four screenshots and the four JSON results. Each names its route and shows
+- **Centering still applies where it fits.** Read `mainDocTop` on `/about`, which reports well
+  above `8` at every viewport. That gap is the centering, and `8` is the body margin, the value a
+  page takes when it top-aligns. Do not read `8` as a failure on its own. A page taller than the
+  viewport is supposed to top-align, so `/` at `1280x720` and `/projects` at `390x844` both report
+  `8` while behaving correctly. Judge centering only on a page that fits its viewport.
+- **Proof.** Keep the five screenshots and the five JSON results. Each names its route and shows
   the navigation.
 
 ## Gotchas

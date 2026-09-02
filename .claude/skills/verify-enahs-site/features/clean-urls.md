@@ -38,16 +38,18 @@ Preconditions:
 - **Image.** Run the same command against `/assets/img/ghibli.jpg`. The result is `200 image/jpeg`.
 - **Reload script.** Run the same command against `/assets/js/ws.js`. The result is
   `200 text/javascript; charset=utf-8`.
-- **Missing page.** Run `control-site get /nope`. The status line is `404` and the content type is
-  `text/plain`.
+- **Missing page.** Run `control-site get /nope`. It reports `HTTP 404` and a content type of
+  `text/plain; charset=utf-8`, which is Go's own error response rather than a site page.
 - **Proof.** Save the status line and content type for every path above in one table, and keep a
   `browser inspect` result showing `images[0].loaded` true, which proves an asset path resolved in
   a real browser rather than only under curl.
 
 ## Gotchas
 
-- The resolver tries the literal path first and only then appends `.html`. A source file named
-  `foo` with no extension would shadow `foo.html`.
+- The resolver tries the literal path first and only then appends `.html`. That ordering cannot
+  be exercised through page routes, because the generator wipes `static/` on every build and only
+  ever writes `.html` outputs, so no extensionless page file exists to shadow one. It matters only
+  for files copied verbatim into `static/assets`.
 - `/writing` is a redirect, not a page. Any check that forbids redirects must request `/writing/`.
 - A 404 body is plain text from the Go file server, not a styled site page. Do not assert site
   navigation on it.
