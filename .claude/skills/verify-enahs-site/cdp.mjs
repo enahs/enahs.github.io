@@ -180,7 +180,9 @@ async function main() {
 
     result.console = consoleLines;
     result.pageErrors = pageErrors;
-    result.ok = command !== 'watch-reload' || result.reloaded === true;
+    result.ok = command === 'watch-reload'
+      ? result.reloaded === true
+      : result.page?.contentReachable !== false;
   } finally {
     cdp.close();
     chrome.proc.kill('SIGKILL');
