@@ -14,8 +14,10 @@ body {
     background: var(--main-bg-color);
     font-family: "Source Code Pro", monospace;
     display: flex;
+    /* `safe` is load-bearing: plain `center` pushes overflowing content above
+       the scroll origin, where it can never be scrolled back into view. */
+    align-items: safe center;
     justify-content: center;
-    align-items: center;
 }
 
 a {
@@ -37,6 +39,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 1em;
+
 }
 
 .hero { 
