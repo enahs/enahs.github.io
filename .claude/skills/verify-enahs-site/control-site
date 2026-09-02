@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# Verification harness for the enahs.github.io static site generator.
+set -euo pipefail
+
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SKILL_DIR" && git rev-parse --show-toplevel)"
+STATE_DIR="${TMPDIR:-/tmp}/verify-enahs-site"
+ARTIFACTS_DIR="$STATE_DIR/artifacts"
+RUN_FILE="$STATE_DIR/run.env"
+LOG_FILE="$STATE_DIR/serve.log"
+SERVE_BIN="$STATE_DIR/serve"
+PORT=3000
+BASE="http://localhost:$PORT"
+
+mkdir -p "$STATE_DIR" "$ARTIFACTS_DIR"
+cd "$REPO_ROOT"
+
+die() { echo "control-site: $*" >&2; exit 1; }
+port_owner() { lsof -nP -iTCP:"$PORT" -sTCP:LISTEN -t 2>/dev/null | head -1; }
+run_pid() { [ -f "$RUN_FILE" ] && . "$RUN_FILE" && echo "${SERVE_PID:-}"; }
+alive() { [ -n "${1:-}" ] && kill -0 "$1" 2>/dev/null; }
+
+cmd_up() {
+  local existing; existing="$(run_pid || true)"
+  if alive "$existing"; then
+    echo "already up (pid $existing) on $BASE. run 'doctor' or 'down'."; return 0
+  fi
+  local owner; owner="$(port_owner || true)"
+  if [ -n "$owner" ]; then
+    die "port $PORT is held by pid $owner, which this run did not start. Stop it yourself; this harness never kills foreign processes. The dev server hardcodes port $PORT, so instances cannot run side by side."
+  fi
+  echo "building serve binary..."
+  go build -o "$SERVE_BIN" ./cmd/serve || die "go build ./cmd/serve failed"
+  : > "$LOG_FILE"
+  env -u BUILD_ENV \
+    EMAIL="${EMAIL:-verify@example.com}" \
+    GA_KEY="${GA_KEY:-}" \
+    "$SERVE_BIN" >>"$LOG_FILE" 2>&1 &
+  local pid=$!
+  printf 'SERVE_PID=%s\nSTARTED=%s\nPORT=%s\n' "$pid" "$(date -u +%FT%TZ)" "$PORT" > "$RUN_FILE"
+  for _ in $(seq 1 100); do
+    if grep -q 'Listening on' "$LOG_FILE" 2>/dev/null && curl -fsS -o /dev/null "$BASE/"; then
+      echo "up: pid $pid on $BASE (dev mode, BUILD_ENV unset)"; echo "log: $LOG_FILE"; return 0
+    fi
+    alive "$pid" || { cat "$LOG_FILE" >&2; die "server exited during startup"; }
+    sleep 0.3
+  done
+  cat "$LOG_FILE" >&2; die "server did not answer on $BASE within 30s"
+}
+
+cmd_doctor() {
+  local fails=0
+  check() { if eval "$2" >/dev/null 2>&1; then echo "  PASS  $1"; else echo "  FAIL  $1"; fails=$((fails+1)); fi; }
+  local pid; pid="$(run_pid || true)"
+  echo "doctor: $BASE"
+  check "run file exists at $RUN_FILE"        "[ -f '$RUN_FILE' ]"
+  check "server process $pid is alive"        "alive '$pid'"
+  check "port $PORT is owned by pid $pid"     "[ \"\$(port_owner)\" = '$pid' ]"
+  check "GET / returns 200"                   "curl -fsS -o /dev/null '$BASE/'"
+  check "clean URL /about returns 200"        "curl -fsS -o /dev/null '$BASE/about'"
+  check "stylesheet is served"                "curl -fsS -o /dev/null '$BASE/assets/css/main.css'"
+  check "dev reload script is injected"       "curl -fsS '$BASE/' | grep -q '/assets/js/ws.js'"
+  check "build output dir exists"             "[ -d '$REPO_ROOT/static' ]"
+  check "no build errors in log"              "! grep -q 'ERROR: Build failed' '$LOG_FILE'"
+  echo "  ---- watch-loop liveness ----"
+  local probe; probe="$(node "$SKILL_DIR/ws-probe.mjs" --url "ws://localhost:$PORT/ws" --for 3 --expect quiet 2>&1 || true)"
+  if echo "$probe" | grep -q '"wedged": true'; then
+    echo "  FAIL  watch loop is live (WEDGED: a queued reload drained on connect)"
+    echo "        The server blocked on an unbuffered reload send with no browser attached."
+    echo "        This probe just unblocked it. Restart with 'down' then 'up' before proving anything."
+    fails=$((fails+1))
+  elif echo "$probe" | grep -q '"greeted": true'; then
+    echo "  PASS  watch loop is live (websocket greeted, no stale reload queued)"
+  else
+    echo "  FAIL  websocket endpoint /ws did not greet"; echo "$probe" | sed 's/^/        /'; fails=$((fails+1))
+  fi
+  echo "doctor: $fails failure(s)"
+  return $fails
+}
+
+cmd_down() {
+  local pid; pid="$(run_pid || true)"
+  if alive "$pid"; then
+    kill -TERM "$pid" 2>/dev/null || true
+    for _ in $(seq 1 20); do alive "$pid" || break; sleep 0.2; done
+    alive "$pid" && kill -KILL "$pid" 2>/dev/null || true
+    echo "stopped pid $pid"
+  else
+    echo "nothing running that this harness started"
+  fi
+  rm -f "$RUN_FILE" "$SERVE_BIN"
+  rm -f "$REPO_ROOT"/pages/verify-probe-*.html
+  go run ./cmd/build >/dev/null 2>&1 || true
+  echo "cleaned run state and probe pages. evidence kept at $ARTIFACTS_DIR"
+}
+
+cmd_get() {
+  local path="${1:?usage: get <path> [--save <name>]}"
+  local out="$ARTIFACTS_DIR/${3:-}"
+  echo "--- GET $BASE$path"
+  curl -sS -D - -o "$STATE_DIR/body.html" "$BASE$path" | head -1
+  if [ "${2:-}" = "--save" ]; then cp "$STATE_DIR/body.html" "$out"; echo "--- saved $out"; fi
+  cat "$STATE_DIR/body.html"
+}
+
+cmd_build() {
+  local mode="${1:-dev}"
+  case "$mode" in
+    prod) BUILD_ENV=PROD EMAIL="${EMAIL:-verify@example.com}" GA_KEY="${GA_KEY:-}" go run ./cmd/build ;;
+    dev)  env -u BUILD_ENV EMAIL="${EMAIL:-verify@example.com}" GA_KEY="${GA_KEY:-}" go run ./cmd/build ;;
+    *) die "build takes 'dev' or 'prod'" ;;
+  esac
+  echo "built $mode into $REPO_ROOT/static"
+}
+
+cmd_browser()  { node "$SKILL_DIR/cdp.mjs" "$@" --out-dir "$ARTIFACTS_DIR"; }
+cmd_restart()  { cmd_down; cmd_up; }
+cmd_ws()      { node "$SKILL_DIR/ws-probe.mjs" --url "ws://localhost:$PORT/ws" "$@"; }
+cmd_log()     { tail -n "${1:-40}" "$LOG_FILE"; }
+cmd_artifacts() { echo "$ARTIFACTS_DIR"; ls -la "$ARTIFACTS_DIR" 2>/dev/null || true; }
+
+case "${1:-}" in
+  up) shift; cmd_up "$@" ;;
+  restart) shift; cmd_restart "$@" ;;
+  doctor) shift; cmd_doctor "$@" ;;
+  down) shift; cmd_down "$@" ;;
+  get) shift; cmd_get "$@" ;;
+  build) shift; cmd_build "$@" ;;
+  browser) shift; cmd_browser "$@" ;;
+  ws) shift; cmd_ws "$@" ;;
+  log) shift; cmd_log "$@" ;;
+  artifacts) shift; cmd_artifacts "$@" ;;
+  *) cat >&2 <<USAGE
+usage: control-site <command>
+  up                      build and start the dev server on $BASE
+  restart                 down then up, the required prelude to any reload drive
+  doctor                  read-only health check, including watch-loop liveness
+  down                    stop what this harness started, keep evidence
+  get <path> [--save f]   fetch a URL, print status line and body
+  build dev|prod          run the generator once into ./static
+  browser inspect --url U [--screenshot name.png]
+  browser watch-reload --url U --create-page pages/verify-probe-X.html --marker M
+  ws [--for N] [--expect quiet|reload]
+  log [n]                 tail the server log
+  artifacts               print and list the evidence directory
+USAGE
+     exit 2 ;;
+esac
