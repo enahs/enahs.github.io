@@ -42,8 +42,13 @@ main {
 
 }
 
-.hero { 
+/* width and height on the tag reserve the box before the bytes arrive, which is
+   what keeps CLS at zero. `height: auto` is what stops those same attributes
+   from forcing a 1380px-tall image once max-width shrinks it. */
+.hero {
+    display: block;
     max-width: 100%;
+    height: auto;
 }
 .nav {
     display: flex;

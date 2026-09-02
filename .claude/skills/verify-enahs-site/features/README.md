@@ -60,3 +60,5 @@ commands, and observable proof.
   they govern how the whole recipe must be sequenced.
 - [Build configuration](./build-config.md) covers dev versus production output, the analytics
   snippet, and the contact address.
+- [Web vitals](./web-vitals.md) covers the homepage's Largest Contentful Paint, its layout
+  stability, and the AVIF hero with its JPEG fallback.

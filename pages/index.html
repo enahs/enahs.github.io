@@ -1,4 +1,14 @@
 {{define "title"}}ENAHS | Home{{end}}
 {{define "content"}}
-    <img class="hero" alt="a handsome guy in an armchair" src="/assets/img/ghibli.jpg">
+    <picture>
+        <source srcset="/assets/img/ghibli.avif" type="image/avif" />
+        <img
+            class="hero"
+            src="/assets/img/ghibli.jpg"
+            width="920"
+            height="1380"
+            fetchpriority="high"
+            alt="a handsome guy in an armchair"
+        />
+    </picture>
 {{ end }}
