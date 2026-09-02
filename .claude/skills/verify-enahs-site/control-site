@@ -96,10 +96,12 @@ cmd_down() {
 
 cmd_get() {
   local path="${1:?usage: get <path> [--save <name>]}"
-  local out="$ARTIFACTS_DIR/${3:-}"
   echo "--- GET $BASE$path"
-  curl -sS -D - -o "$STATE_DIR/body.html" "$BASE$path" | head -1
-  if [ "${2:-}" = "--save" ]; then cp "$STATE_DIR/body.html" "$out"; echo "--- saved $out"; fi
+  curl -sS -o "$STATE_DIR/body.html" -w 'HTTP %{http_code}  %{content_type}\n' "$BASE$path"
+  if [ "${2:-}" = "--save" ]; then
+    local out="$ARTIFACTS_DIR/${3:-body.html}"
+    cp "$STATE_DIR/body.html" "$out"; echo "--- saved $out"
+  fi
   cat "$STATE_DIR/body.html"
 }
 

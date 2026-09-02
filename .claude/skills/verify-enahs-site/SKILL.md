@@ -76,7 +76,8 @@ those fields, not against a template file.
 
 It also returns `mainDocTop` and `contentReachable`, which say whether the page's content begins
 at or below the scroll origin. A false `contentReachable` means part of the page cannot be
-scrolled to. Check it on the longest article after any layout change.
+scrolled to, and `inspect` exits non-zero when it happens, so this one fails a run rather than
+waiting to be noticed. Run it on the longest article after any layout change.
 
 Prefer stable handles. Match on rendered text, `href` values and route paths. The site has no
 test ids and almost no interactive elements, so text and routes are the handles.
