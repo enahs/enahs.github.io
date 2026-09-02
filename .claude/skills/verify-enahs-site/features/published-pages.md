@@ -32,7 +32,9 @@ Preconditions:
 - **Homepage.** Open the site root. Run
   `control-site browser inspect --url http://localhost:3000/ --screenshot home.png`.
   The title is `ENAHS | Home`, `images` holds one entry whose `src` is `/assets/img/ghibli.jpg`
-  with `loaded` true and alt text `a handsome guy in an armchair`.
+  with `loaded` true and alt text `a handsome guy in an armchair`. That `src` is the `<picture>`
+  fallback; the bytes a modern browser actually fetches are `/assets/img/ghibli.avif`. Use
+  `browser vitals` to see which one shipped.
 - **Homepage navigation.** Read `links` from the same result. It contains `/about` and does not
   contain `/`, because the homepage offers About in place of Home.
 - **About page.** Choose `About`. Run
