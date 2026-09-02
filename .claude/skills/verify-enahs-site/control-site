@@ -142,6 +142,8 @@ usage: control-site <command>
   build dev|prod          run the generator once into ./static
   browser inspect --url U [--screenshot name.png]
   browser watch-reload --url U --create-page pages/verify-probe-X.html --marker M
+  browser vitals --url U [--runs 3] [--throttle slow4g|fast4g|none] [--cpu 4]
+                          median LCP, CLS and transfer bytes under an emulated mobile network
   ws [--for N] [--expect quiet|reload]
   log [n]                 tail the server log
   artifacts               print and list the evidence directory
