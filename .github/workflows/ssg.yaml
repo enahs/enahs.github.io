@@ -43,11 +43,12 @@ jobs:
 
       - name: build site
         run: |
-          go build -o bin/ssg . 
-          ./bin/ssg
+          go run cmd/build/main.go
+
         env:
           EMAIL: ${{ vars.EMAIL }}
           GA_KEY: ${{ vars.GA_KEY }}
+          BUILD_ENV: "PROD"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
